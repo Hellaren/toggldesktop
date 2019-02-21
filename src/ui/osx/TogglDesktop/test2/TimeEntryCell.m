@@ -12,6 +12,18 @@
 #import "toggl_api.h"
 #import "TogglDesktop-Swift.h"
 
+@interface TimeEntryCell ()
+
+@property (weak) IBOutlet NSLayoutConstraint *descriptionLblLeading;
+@property (nonatomic, weak) IBOutlet NSTextField *projectTextField;
+@property (nonatomic, weak) IBOutlet NSImageView *billableFlag;
+@property (nonatomic, weak) IBOutlet NSImageView *tagFlag;
+@property (nonatomic, weak) IBOutlet NSTextField *durationTextField;
+@property (weak) IBOutlet NSImageView *unsyncedIcon;
+@property (weak) IBOutlet NSHoverButton *groupToggleButton;
+@property (weak) IBOutlet NSHoverButton *continueButton;
+@end
+
 @implementation TimeEntryCell
 
 extern void *ctx;
@@ -109,7 +121,7 @@ extern void *ctx;
 
 	[clientName setAttributes:
 	 @{
-		 NSFontAttributeName : [NSFont systemFontOfSize:[NSFont systemFontSize]],
+		 NSFontAttributeName : [NSFont systemFontOfSize:12],
 		 NSForegroundColorAttributeName:[NSColor disabledControlTextColor]
 	 }
 						range:NSMakeRange(0, [clientName length])];
@@ -120,7 +132,7 @@ extern void *ctx;
 
 		[string setAttributes:
 		 @{
-			 NSFontAttributeName : [NSFont systemFontOfSize:[NSFont systemFontSize]],
+			 NSFontAttributeName : [NSFont systemFontOfSize:12],
 			 NSForegroundColorAttributeName:[NSColor controlTextColor]
 		 }
 						range:NSMakeRange(0, [string length])];
@@ -138,85 +150,15 @@ extern void *ctx;
 	return string;
 }
 
-- (NSColor *)adaptedBackgroundColor {
-	BOOL isDarkTheme = [ThemeUtils isDarkTheme];
-
-	NSColor *primaryColor = isDarkTheme ? [NSColor safeUnemphasizedSelectedContentBackgroundColor] : [ConvertHexColor hexCodeToNSColor:@"#FAFAFA"];
-
-	if (self.GroupItemCount && self.GroupOpen && !self.Group)
-	{
-		primaryColor = isDarkTheme ? [NSColor controlColor] : [ConvertHexColor hexCodeToNSColor:@"#f0f0f0"];
-	}
-	return primaryColor;
-}
-
-- (void)setupGroupMode
-{
-	// Default descriptionbox trail (no group icon)
-	int trail = 140;
-	int lead = 0;
-	NSString *continueIcon = @"continue_light.pdf";
-	NSString *toggleGroupIcon = @"group_icon_closed.pdf";
-	NSString *toggleGroupText = [NSString stringWithFormat:@"%lld", self.GroupItemCount];
-	BOOL isDarkTheme = [ThemeUtils isDarkTheme];
-
-	// Grouped mode background update
-	if (self.GroupItemCount && self.GroupOpen && !self.Group)
-	{
-		lead = 10;
-
-		NSColor *textColor = isDarkTheme ? [NSColor secondaryLabelColor] : [ConvertHexColor hexCodeToNSColor:@"#696969"];
-
-		// Gray color for subitem
-		NSMutableAttributedString *description = [[NSMutableAttributedString alloc] initWithString:self.descriptionTextField.stringValue];
-		[description setAttributes:
-		 @{
-			 NSForegroundColorAttributeName:textColor
-		 }
-							 range:NSMakeRange(0, [description length])];
-
-		[self.descriptionTextField setAttributedStringValue:description];
-	}
-
+- (void)setupGroupMode {
 	if (self.Group)
 	{
-		// Group icon visible
-		trail = 175;
-		if (self.GroupOpen)
-		{
-			toggleGroupIcon = @"group_icon_open.pdf";
-			self.groupToggleButton.title = @"";
-		}
-		else
-		{
-			NSColor *textColor = isDarkTheme ? [NSColor labelColor] : [ConvertHexColor hexCodeToNSColor:@"#a4a4a4"];
-
-			// Gray color to grouped button text
-			NSMutableParagraphStyle *paragrapStyle = NSMutableParagraphStyle.new;
-			paragrapStyle.alignment = kCTTextAlignmentCenter;
-
-			NSMutableAttributedString *string = [[NSMutableAttributedString alloc] initWithString:toggleGroupText];
-			[string setAttributes:
-			 @{
-				 NSFontAttributeName : [NSFont systemFontOfSize:9.0],
-				 NSForegroundColorAttributeName:textColor,
-				 NSParagraphStyleAttributeName:paragrapStyle
-			 }
-							range:NSMakeRange(0, [string length])];
-
-			[self.groupToggleButton setAttributedTitle:string];
-		}
-		[self.groupToggleButton setImage:[NSImage imageNamed:toggleGroupIcon]];
-
-		continueIcon = @"continue_regular.pdf";
+		self.descriptionLblLeading.constant = 46.0;
 	}
-
-	[self.continueButton setImage:[NSImage imageNamed:continueIcon]];
-	[self.groupToggleButton setHidden:!self.Group];
-	self.descriptionBoxLead.constant = lead;
-	self.descriptionBoxTrail.constant = trail;
-
-	[self.backgroundBox setFillColor:[self adaptedBackgroundColor]];
+	else
+	{
+		self.descriptionLblLeading.constant = 15.0;
+	}
 }
 
 - (void)focusFieldName
@@ -251,10 +193,6 @@ extern void *ctx;
 
 - (void)setFocused
 {
-	BOOL isDarkTheme = [ThemeUtils isDarkTheme];
-	NSColor *fillColor = isDarkTheme ? [NSColor controlColor] : [ConvertHexColor hexCodeToNSColor:@"#E8E8E8"];
-
-	[self.backgroundBox setFillColor:fillColor];
 }
 
 - (void)openEdit
