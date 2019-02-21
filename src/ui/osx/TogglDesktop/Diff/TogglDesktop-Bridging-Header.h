@@ -4,3 +4,4 @@
 
 #import "TimeEntryViewItem.h"
 #import "TimeEntryCell.h"
+#import "LoadMoreCell.h"
